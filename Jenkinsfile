@@ -37,7 +37,6 @@ pipeline {
                     }
                     steps {
                         sh '''
-                            echo 'Test Stage'
                             test -f build/index.html
                             npm test
                         '''
@@ -57,16 +56,15 @@ pipeline {
                     }
                     steps {
                         sh '''
-                            echo 'E2E Stage'
                             npm install serve
                             node_modules/.bin/serve -s build & # the & symbol places the process in the background.
                             sleep 10 # It takes some time for the server to start
-                            npx playwright test
+                            npx playwright test --reporter=html
                         '''
                     }
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local Report', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -82,12 +80,32 @@ pipeline {
             }
             steps {
                 sh '''
-                    npm install netlify-cli --save-dev
-                    npx netlify --version
                     echo "Deploy to production. SITE ID: $NETLIFY_SITE_ID"
                     npx netlify status
                     npx netlify deploy --dir=build --prod --no-build
                 '''
+            }
+        }
+
+        stage('Prod E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = 'https://stellular-lily-0bfef4.netlify.app/'
+            }
+            steps {
+                sh '''
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Prod Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
     }
