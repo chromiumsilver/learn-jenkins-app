@@ -81,9 +81,38 @@ pipeline {
             steps {
                 sh '''
                     echo "Deploy to staging."
+                    npm install node-jq
                     npx netlify status
-                    npx netlify deploy --dir=build --no-build
+                    npx netlify deploy --dir=build --no-build --json > deploy-staging-results.json
                 '''
+                script {
+                    // trim() removes trailing newlines/spaces
+                    env.STAGING_URL = sh(script: "npx node-jq -r '.deploy_url' deploy-staging-results.json", returnStdout: true).trim()
+                    echo "Staging URL set to: ${env.STAGING_URL}"
+                }
+            }
+        }
+
+        stage('Staging E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+            }
+            steps {
+                sh '''
+                    echo "Testing against: $CI_ENVIRONMENT_URL"
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Staging Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
 
