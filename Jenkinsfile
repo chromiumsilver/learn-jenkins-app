@@ -51,14 +51,13 @@ pipeline {
                 stage('E2E') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            image 'my-playwright'
                             reuseNode true
                         }
                     }
                     steps {
                         sh '''
-                            npm install serve
-                            node_modules/.bin/serve -s build & # the & symbol places the process in the background.
+                            serve -s build & # the & symbol places the process in the background.
                             sleep 10 # It takes some time for the server to start
                             npx playwright test --reporter=html
                         '''
@@ -82,13 +81,12 @@ pipeline {
             steps {
                 sh '''
                     echo "Deploy to staging."
-                    npm install node-jq
                     npx netlify status
                     npx netlify deploy --dir=build --no-build --json > deploy-staging-results.json
                 '''
                 script {
                     // trim() removes trailing newlines/spaces
-                    env.STAGING_URL = sh(script: "npx node-jq -r '.deploy_url' deploy-staging-results.json", returnStdout: true).trim()
+                    env.STAGING_URL = sh(script: "jq -r '.deploy_url' deploy-staging-results.json", returnStdout: true).trim()
                     echo "Staging URL set to: ${env.STAGING_URL}"
                 }
             }
@@ -97,7 +95,7 @@ pipeline {
         stage('Staging E2E') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -144,7 +142,7 @@ pipeline {
         stage('Prod E2E') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
