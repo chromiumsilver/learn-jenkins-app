@@ -40,7 +40,7 @@ pipeline {
             agent {
                 docker {
                     image 'my-aws-cli'
-                    args "--entrypoint=''"
+                    args "-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
                     reuseNode true
                 }
             }
@@ -48,7 +48,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY
-                        docker images
+                        docker push $AWS_REGISTRY/$APP_NAME:$REACT_APP_VERSION
                     '''
                 }
             }
