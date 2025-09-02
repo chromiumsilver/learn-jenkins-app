@@ -1,3 +1,4 @@
-FROM amazon/aws-cli
-RUN RUN amazon-linux-extras install docker
-RUN yum install jq -y
+FROM docker:cli
+RUN apk add --no-cache \
+      python3 py3-pip bash curl jq git && \
+    pip3 install awscli==1.32.81
