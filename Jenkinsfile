@@ -39,7 +39,7 @@ pipeline {
         stage('Push ECR') {
             agent {
                 docker {
-                    image 'amazon/aws-cli'
+                    image 'my-aws-cli'
                     args "--entrypoint=''"
                     reuseNode true
                 }
