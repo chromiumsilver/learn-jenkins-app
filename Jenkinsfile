@@ -81,10 +81,10 @@ pipeline {
                         LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision')
                         echo $LATEST_TD_REVISION
                         
-                        # aws ecs update-service \
-                        #     --cluster $AWS_ECS_CLUSTER \
-                        #     --service $AWS_ECS_SERVICE \
-                        #     --task-definition $AWS_ECS_TASK_DEF:$LATEST_TD_REVISION
+                        aws ecs update-service \
+                            --cluster $AWS_ECS_CLUSTER \
+                            --service $AWS_ECS_SERVICE \
+                            --task-definition $AWS_ECS_TASK_DEF:$LATEST_TD_REVISION
 
                         # aws ecs wait services-stable \
                         #     --cluster $AWS_ECS_CLUSTER \
