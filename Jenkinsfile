@@ -70,7 +70,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
-                        LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision'
+                        LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision')
                         echo $LATEST_TD_REVISION
 
                         sed -i "s/AWS_ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws/task-def-template-prod.json
