@@ -5,7 +5,8 @@ pipeline {
         REACT_APP_VERSION = "1.0.$BUILD_ID"
         APP_NAME = "learn-jenkins-app"
         AWS_DEFAULT_REGION = "us-west-2"
-        AWS_REGISTRY = "183392808235.dkr.ecr.us-west-2.amazonaws.com"
+        AWS_ACCOUNT_ID = credentials('aws-account-id')
+        AWS_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
     }
 
     stages {
@@ -54,26 +55,21 @@ pipeline {
             }
         }
 
-        // stage('Deploy AWS') {
-        //     agent {
-        //         docker {
-        //             image 'amazon/aws-cli'
-        //             args "--entrypoint=''"
-        //             reuseNode true
-        //         }
-        //     }
-        //     environment {
-        //         AWS_S3_BUCKET = 'learn-jenkins-20250901'
-        //     }
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-        //             sh '''
-        //                 echo "Deploy to AWS S3."
-        //                 aws --version
-        //                 aws s3 sync build s3://$AWS_S3_BUCKET
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Deploy ECS') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                    args "--entrypoint=''"
+                    reuseNode true
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    sh '''
+                        aws --version
+                    '''
+                }
+            }
+        }
     }
 }
