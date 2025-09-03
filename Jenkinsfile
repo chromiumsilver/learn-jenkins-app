@@ -86,9 +86,9 @@ pipeline {
                             --service $AWS_ECS_SERVICE \
                             --task-definition $AWS_ECS_TASK_DEF:$LATEST_TD_REVISION
 
-                        # aws ecs wait services-stable \
-                        #     --cluster $AWS_ECS_CLUSTER \
-                        #     --services $AWS_ECS_SERVICE
+                        aws ecs wait services-stable \
+                            --cluster $AWS_ECS_CLUSTER \
+                            --services $AWS_ECS_SERVICE
 
                     '''
                 }
