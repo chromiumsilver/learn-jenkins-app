@@ -70,14 +70,16 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
-                        LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision')
-                        echo $LATEST_TD_REVISION
 
+                        sed -i "s/AWS_ECS_TASK_DEF/${AWS_ECS_TASK_DEF}/g" aws/task-def-template-prod.json
                         sed -i "s/AWS_ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws/task-def-template-prod.json
                         sed -i "s/AWS_DEFAULT_REGION/${AWS_DEFAULT_REGION}/g" aws/task-def-template-prod.json
                         sed -i "s/APP_NAME/${APP_NAME}/g" aws/task-def-template-prod.json
-                        sed -i "s/LATEST_TD_REVISION/${LATEST_TD_REVISION}/g" aws/task-def-template-prod.json
+                        sed -i "s/REACT_APP_VERSION/${REACT_APP_VERSION}/g" aws/task-def-template-prod.json
                         cat aws/task-def-template-prod.json
+
+                        LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision')
+                        echo $LATEST_TD_REVISION
                         
                         # aws ecs update-service \
                         #     --cluster $AWS_ECS_CLUSTER \

@@ -6,7 +6,7 @@
     "containerDefinitions": [
         {
             "name": "learnjenkinsapp",
-            "image": "AWS_ACCOUNT_ID.dkr.ecr.AWS_DEFAULT_REGION.amazonaws.com/APP_NAME:LATEST_TD_REVISION",
+            "image": "AWS_ACCOUNT_ID.dkr.ecr.AWS_DEFAULT_REGION.amazonaws.com/APP_NAME:REACT_APP_VERSION",
             "portMappings": [
                 {
                     "name": "ngnix-80-tcp",
