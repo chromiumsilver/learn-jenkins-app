@@ -2,11 +2,11 @@
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "family": "learnjenkinsapp-prod",
+    "family": "AWS_ECS_TASK_DEF",
     "containerDefinitions": [
         {
             "name": "learnjenkinsapp",
-            "image": "nginx:latest",
+            "image": "AWS_ACCOUNT_ID.dkr.ecr.AWS_DEFAULT_REGION.amazonaws.com/APP_NAME:LATEST_TD_REVISION",
             "portMappings": [
                 {
                     "name": "ngnix-80-tcp",
@@ -23,5 +23,5 @@
     "networkMode": "awsvpc",
     "memory": "512",
     "cpu": "256",
-    "executionRoleArn": ""
+    "executionRoleArn": "arn:aws:iam::AWS_ACCOUNT_ID:role/ecsTaskExecutionRole"
 }

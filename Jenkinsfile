@@ -7,6 +7,9 @@ pipeline {
         AWS_DEFAULT_REGION = "us-west-2"
         AWS_ACCOUNT_ID = credentials('aws-account-id')
         AWS_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+        AWS_ECS_CLUSTER = "ecs-prod-learn-jenkins-app"
+        AWS_ECS_TASK_DEF = "learnjenkinsapp-prod"
+        AWS_ECS_SERVICE = "learnjenkinsapp-prod-service"
     }
 
     stages {
@@ -58,7 +61,7 @@ pipeline {
         stage('Deploy ECS') {
             agent {
                 docker {
-                    image 'amazon/aws-cli'
+                    image 'my-aws-cli'
                     args "--entrypoint=''"
                     reuseNode true
                 }
@@ -67,6 +70,24 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-local-jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
+                        LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-def-template-prod.json | jq -r '.taskDefinition.revision'
+                        echo $LATEST_TD_REVISION
+
+                        sed -i "s/AWS_ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" aws/task-def-template-prod.json
+                        sed -i "s/AWS_DEFAULT_REGION/${AWS_DEFAULT_REGION}/g" aws/task-def-template-prod.json
+                        sed -i "s/APP_NAME/${APP_NAME}/g" aws/task-def-template-prod.json
+                        sed -i "s/LATEST_TD_REVISION/${LATEST_TD_REVISION}/g" aws/task-def-template-prod.json
+                        cat aws/task-def-template-prod.json
+                        
+                        # aws ecs update-service \
+                        #     --cluster $AWS_ECS_CLUSTER \
+                        #     --service $AWS_ECS_SERVICE \
+                        #     --task-definition $AWS_ECS_TASK_DEF:$LATEST_TD_REVISION
+
+                        # aws ecs wait services-stable \
+                        #     --cluster $AWS_ECS_CLUSTER \
+                        #     --services $AWS_ECS_SERVICE
+
                     '''
                 }
             }
